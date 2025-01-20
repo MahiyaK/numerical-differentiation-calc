@@ -1,4 +1,4 @@
-# Numerical Differentiation Visualization App
+# Numerical Differentiation Visualization Calculator
 
 An interactive educational tool for understanding numerical differentiation methods including:
 - Forward Difference
