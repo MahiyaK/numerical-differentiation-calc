@@ -10,7 +10,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Function definitions
 functions = {
     'exp': {
         'fn': lambda x: np.exp(x),
@@ -128,14 +127,11 @@ def get_step_by_step_calculation(method, f, x, h, exact_derivative, second_deriv
         ]
     return steps
 
-# Streamlit app
 st.title("Numerical Differentiation Visualization")
 
-# Sidebar controls
 with st.sidebar:
     st.header("Controls")
 
-    # Function selection
     selected_function = st.radio(
         "Select Function",
         options=['exp', 'sin', 'cubic'],
@@ -144,19 +140,16 @@ with st.sidebar:
     x_point = st.number_input("Test Point (x)")
     step_size = st.number_input("Test Step Size (h)")
 
-    # Method selection
     st.header("Methods")
     show_forward = st.checkbox("Forward Difference", value=True)
     show_central = st.checkbox("Central Difference", value=True)
     show_backward = st.checkbox("Backward Difference", value=True)
 
-# Get function and its derivative
 f = functions[selected_function]['fn']
 f_prime = functions[selected_function]['derivative']
 f_double_prime = functions[selected_function]['second_derivative']
 f_triple_prime = functions[selected_function]['third_derivative']
 
-# Calculate derivatives and errors
 exact_derivative = f_prime(x_point)
 results = {}
 
@@ -175,11 +168,10 @@ if show_backward:
     backward_error = abs(backward_result - exact_derivative)
     results['Backward'] = {'value': backward_result, 'error': backward_error}
 
-# Create visualization
+
 x = np.linspace(-2, 2, 200)
 y = f(x)
 
-# Create subplot with function and derivative
 fig = make_subplots(
     rows=2, 
     cols=1, 
@@ -188,13 +180,11 @@ fig = make_subplots(
 )
 
 
-# Plot original function
 fig.add_trace(
     go.Scatter(x=x, y=y, name='Function', line=dict(color='black')),
     row=1, col=1
 )
 
-# Plot point of interest
 fig.add_trace(
     go.Scatter(x=[x_point], y=[f(x_point)], 
                mode='markers', name='Point',
@@ -202,29 +192,31 @@ fig.add_trace(
     row=1, col=1
 )
 
-# Plot exact derivative tangent line
 tangent_x = np.array([x_point - 0.5, x_point + 0.5])
 tangent_y = f(x_point) + exact_derivative * (tangent_x - x_point)
 fig.add_trace(
     go.Scatter(x=tangent_x, y=tangent_y, 
-               name='Exact Derivative',
+               name='True Slope',
                line=dict(color='orange', dash='dash')),
     row=1, col=1
 )
 
-# Colors for different methods
 colors = {'Forward': 'red', 'Central': 'blue', 'Backward': 'purple'}
 
-# Plot numerical approximations
 for method, data in results.items():
     if method == 'Forward':
-        h_points = [x_point, x_point + step_size]
+        x1, x2 = x_point, x_point + step_size
+        y1, y2 = f(x_point), f(x_point + step_size)
+        h_points = [x1, x2]
     elif method == 'Backward':
-        h_points = [x_point - step_size, x_point]
-    else:  # Central
-        h_points = [x_point - step_size, x_point + step_size]
+        x1, x2 = x_point - step_size, x_point
+        y1, y2 = f(x_point - step_size), f(x_point)
+        h_points = [x1, x2]
+    else:  
+        x1, x2 = x_point - step_size, x_point + step_size
+        y1, y2 = f(x_point - step_size), f(x_point + step_size)
+        h_points = [x1, x2]
 
-    # Plot vertical lines at h points
     for h_point in h_points:
         fig.add_trace(
             go.Scatter(x=[h_point, h_point], 
@@ -235,7 +227,6 @@ for method, data in results.items():
             row=1, col=1
         )
 
-    # Plot approximation points
     fig.add_trace(
         go.Scatter(x=h_points, y=[f(h) for h in h_points],
                   mode='markers',
@@ -244,19 +235,14 @@ for method, data in results.items():
         row=1, col=1
     )
     
-    fig.add_trace(
-        go.Scatter(x=h_points, y=[f(h) for h in h_points],
-                  mode='markers',
-                  name=f'{method} Points',
-                  marker=dict(color=colors[method], size=8)),
-        row=1, col=1
-    )
+    slope = (y2 - y1) / (x2 - x1)
+    extend = step_size  
     
-    # Add approximate derivative lines
-    approx_tangent_x = np.array([x_point - 0.5, x_point + 0.5])
-    approx_tangent_y = f(x_point) + data['value'] * (approx_tangent_x - x_point)
+    line_x = [x1 - extend, x2 + extend]
+    line_y = [y1 - slope * extend, y2 + slope * extend]
+    
     fig.add_trace(
-        go.Scatter(x=approx_tangent_x, y=approx_tangent_y,
+        go.Scatter(x=line_x, y=line_y,
                   name=f'{method} Approximation',
                   line=dict(color=colors[method])),
         row=1, col=1
@@ -267,7 +253,6 @@ fig.update_layout(
     showlegend=True,
 )
 
-# Add gridlines specifically to the function plot (row 1)
 fig.update_xaxes(
     showgrid=True,
     gridwidth=1,
@@ -290,7 +275,7 @@ fig.update_yaxes(
     col=1
 )
 
-# Plot error bars
+
 error_data = pd.DataFrame([
     {'Method': method, 'Error': data['error']}
     for method, data in results.items()
@@ -304,15 +289,14 @@ fig.add_trace(
     row=2, col=1
 )
 
-# Update layout
+
 fig.update_layout(height=800, showlegend=True)
 fig.update_xaxes(title_text="x", row=2, col=1)
 fig.update_yaxes(title_text="Error", row=2, col=1)
 
-# Display plot
+
 st.plotly_chart(fig, use_container_width=True)
 
-# Display results in a clean grid
 st.header("Numerical Results")
 col1, col2, col3, col4 = st.columns(4)
 
@@ -332,9 +316,7 @@ if 'table_data' not in st.session_state:
     st.session_state.table_data = []
     st.session_state.previous_h = None
 
-# Check if step size has changed
 if st.session_state.previous_h != step_size:
-    # Add new row for current h value
     row_data = {'Step Size (h)': f"{step_size:.3f}"}
     
     if show_forward:
@@ -355,32 +337,25 @@ if st.session_state.previous_h != step_size:
         row_data['Backward f\'(x)'] = f"{back_deriv:.3f}"
         row_data['Backward Truncation Error'] = f"{back_trunc:.3f}"
     
-    # Add timestamp for ordering
     row_data['Timestamp'] = pd.Timestamp.now()
     
-    # Append new data to history
     st.session_state.table_data.append(row_data)
     st.session_state.previous_h = step_size
 
-# Create DataFrame from history
 if st.session_state.table_data:
     df = pd.DataFrame(st.session_state.table_data)
     
-    # Sort by timestamp in descending order and drop timestamp column
     df = df.sort_values('Timestamp', ascending=True)
     df = df.drop('Timestamp', axis=1)
     
-    # Add exact derivative for reference
     st.write(f"Exact derivative at x = {x_point:.3f}: {exact_derivative:.3f}")
     
-    # Display table with custom formatting
     st.dataframe(
         df,
         hide_index=True,
         use_container_width=True
     )
     
-    # Add clear button for table
     if st.button("Clear Table History"):
         st.session_state.table_data = []
         st.session_state.previous_h = None
@@ -388,7 +363,6 @@ if st.session_state.table_data:
     
 st.header("Step-by-Step Calculations")
 
-# Create tabs for different methods
 methods_enabled = [method for method, show in 
                   zip(['Forward', 'Central', 'Backward'], 
                       [show_forward, show_central, show_backward]) if show]
@@ -396,7 +370,6 @@ methods_enabled = [method for method, show in
 if methods_enabled:
     tabs = st.tabs(methods_enabled)
     
-    # Custom CSS for step-by-step calculations
     st.markdown("""
         <style>
         .step-container {
@@ -432,13 +405,11 @@ if methods_enabled:
                 functions[selected_function]['third_derivative']
             )
             
-            # Group steps by section
             current_section = None
             section_content = []
             
             for step in steps:
                 if step.startswith(('1.', '2.', '3.', '4.', '5.')):
-                    # If we have a previous section, display it
                     if current_section:
                         st.markdown(f"""
                             <div class="step-container">
@@ -451,11 +422,9 @@ if methods_enabled:
                         section_content = []
                     current_section = step
                 else:
-                    # Format calculation lines
                     formatted_step = f'<div class="calculation">{step}</div>'
                     section_content.append(formatted_step)
             
-            # Display the last section
             if current_section:
                 st.markdown(f"""
                     <div class="step-container">
