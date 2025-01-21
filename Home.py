@@ -1,14 +1,12 @@
 import streamlit as st
 
 def main():
-    # Page configuration
     st.set_page_config(
         page_title="Numerical Differentiation Theory",
         layout="wide",
         initial_sidebar_state="expanded"
     )
 
-    # Enhanced Custom CSS with improved spacing, colors, and typography
     st.markdown("""
         <style>
         /* Main container styling */
@@ -117,7 +115,6 @@ def main():
         </style>
     """, unsafe_allow_html=True)
     
-    # Introduction Section
     st.title("What is Numerical Differentiation?")
     with st.container():
         st.markdown("""
@@ -132,7 +129,6 @@ def main():
         </div>
         """, unsafe_allow_html=True)
     
-    # Methods Section
     st.header("Numerical Differentiation Methods")
     
     tabs = st.tabs(["Forward Difference", "Backward Difference", "Central Difference"])
@@ -227,7 +223,6 @@ def main():
         </div>
         """, unsafe_allow_html=True)
     
-    # Error Analysis Section
     st.header("Understanding Error")
     
     error_col1, error_col2 = st.columns(2)
@@ -239,8 +234,10 @@ def main():
                 <p>Truncation error is the error caused by approximating a mathematical procedure using a finite
                 number of terms in a series expansion, rather than the exact formula.
                 It arises from using finite differences to approximate derivatives. 
-                The truncation error is in the order of 'h' and can be decreased by
-                decreasing 'h'.</p>
+                The truncation error is in the order of 'h'.</p>
+                <p>Truncation error shows how much accuracy is lost because we are using a formula instead of the exact 
+                derivative. Smaller step sizes h reduce this error, and central differences usually have lower 
+                truncation error than forward or backward differences.</p>
             </div>
         """, unsafe_allow_html=True)
     
@@ -251,6 +248,8 @@ def main():
                 <p>Absolute error is the difference between the true(exact) value and the approximated value. 
                 It quantifies how much an approximation deviates from the actual value.
                 It measure the accuracy of numerical computations and helps compare different numerical methods.</p>
+                <p>Absolute error basically tells you how far your approximation is from the true derivative. A smaller absolute error means a more accurate result. 
+                Try adjusting h to see how the error changes!</p>
             </div>
         """, unsafe_allow_html=True)
 
